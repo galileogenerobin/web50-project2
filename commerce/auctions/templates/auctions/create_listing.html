@@ -4,5 +4,11 @@
 
 {% block body %}
 <h2>Create Listing</h2>
-TODO: Placeholder page for creating a listing
+<form action="create_listing" method="post">
+    {% csrf_token %}
+    <table>
+    {{ form.as_table }}
+    </table>
+    <input type="submit" value="Submit">
+</form>
 {% endblock %}

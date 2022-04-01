@@ -14,7 +14,7 @@ class Listing(models.Model):
     # Recall that related_name allows us to do a reverse search, i.e. for a given User, User.listings.all() gives us all related Listings for that User
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listings")
     # Optional Category and image URL fields
-    category = models.ForeignKey('Category', on_delete=models.CASCADE, blank=True, related_name="category_listings")
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, blank=True, null=True, related_name="category_listings")
     img_url = models.URLField(blank=True)
 
     def __str__(self):

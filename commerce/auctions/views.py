@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from .models import User, Listing, Bid, Comment, Category
+from .forms import ListingForm
 
 
 def index(request):
@@ -94,7 +95,39 @@ def category_listings(request, category_id):
 # Create a new listing
 @login_required(login_url="login")
 def create_listing(request):
-    return render(request, 'auctions/create_listing.html')
+    # If a listing was created via POST
+    if request.method == 'POST':
+        # We are using ModelForms to manage our model data
+        # See https://docs.djangoproject.com/en/4.0/topics/forms/modelforms/
+        # Create a form and populate it with the POST request data
+        form = ListingForm(request.POST)
+
+        if form.is_valid():
+            # Create a new listing, but don't commit it to the database (since it does not have the 'user' data yet)
+            listing = form.save(commit=False)
+            # Add the user to the Listing object
+            listing.user = request.user
+            # Now we save / commit the Listing to the database
+            listing.save()
+            # Redirect to home page
+            return redirect(reverse('index'))
+
+        # Since we are using ModelForms, we don't need to parse the cleaned_data one by one; we can just save the ModelForm into the corresponding Model object
+        # if form.is_valid():
+        #     # title = form.cleaned_data['title']
+        #     # description = form.cleaned_data['description']
+        #     # starting_bid = form.cleaned_data['starting_bid']
+        #     # category = form.cleaned_data['category']
+        #     # img_url = form.cleaned_data['img_url']
+
+            
+    else:
+        # If GET request, we create a blank form
+        form = ListingForm()
+
+    return render(request, 'auctions/create_listing.html', {
+        'form': form
+    })
 
 
 # Check watch list
