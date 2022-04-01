@@ -1,9 +1,16 @@
 {% extends 'auctions/layout.html' %}
 
 <!-- For update -->
-{% block title %}TBD - Listing Title{% endblock %}
+{% block title %}{{ listing.title }}{% endblock %}
 
 {% block body %}
 <h2>Listing</h2>
-TODO: Placeholder for Listing page
+<div>
+    <ul>
+        <h5>{{ listing.title }}</h5>
+        <li><strong>Price: $ {{ listing.starting_bid }}</strong></li>
+        <li>Category: {{ listing.category}}</li>
+        <li>Posted by: {{ listing.user }}</li>
+    </ul>
+</div>
 {% endblock %}

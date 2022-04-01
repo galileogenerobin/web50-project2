@@ -1,7 +1,23 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
+    {% if category %}
+    <h2>Active Listings for {{ category }}</h2>
+    {% else %}
     <h2>Active Listings</h2>
+    {% endif %}
 
-    TODO
+    {% for listing in listings %}
+    <a href="{% url 'listing' listing.id %}">
+        <div>
+            <ul>
+                <h5>{{ listing.title }}</h5>
+                <li><strong>Price: $ {{ listing.starting_bid }}</strong></li>
+                <li>{{ listing.description }}</li>
+                <li>Category: {{ listing.category}}</li>
+                <li>Posted by: {{ listing.user }}</li>
+            </ul>
+        </div>
+    </a>
+    {% endfor %}
 {% endblock %}

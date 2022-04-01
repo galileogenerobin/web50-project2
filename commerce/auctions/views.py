@@ -5,11 +5,15 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .models import User
+from .models import User, Listing, Bid, Comment, Category
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    listings = Listing.objects.all()
+
+    return render(request, "auctions/index.html", {
+        "listings": listings
+    })
 
 
 def login_view(request):
@@ -65,14 +69,26 @@ def register(request):
 
 
 def listing(request, listing_id):
-    listing = None
+    listing = Listing.objects.get(id=listing_id)
     return render(request, 'auctions/listing.html', {
         'listing': listing
     })
 
 
 def categories(request):
-    return render(request, 'auctions/categories.html')
+    categories = Category.objects.all()
+    return render(request, 'auctions/categories.html', {
+        'categories': categories
+    })
+
+
+def category_listings(request, category_id):
+    category = Category.objects.get(id=category_id)
+    # We will reuse the same template for Active Listings, but specity the category
+    return render(request, 'auctions/index.html', {
+        'listings': category.category_listings.all(),
+        'category': category.name
+    })
 
 
 # Create a new listing

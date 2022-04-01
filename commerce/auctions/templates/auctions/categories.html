@@ -4,5 +4,11 @@
 
 {% block body %}
 <h2>Categories</h2>
-TODO: Placeholder for categories page
+
+<ul>
+    {% for category in categories %}
+    <li><a href="{% url 'category_listings' category.id %}">{{ category }}</li></a>
+    {% endfor %}
+</ul>
+
 {% endblock %}
