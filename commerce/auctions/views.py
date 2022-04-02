@@ -173,7 +173,7 @@ def submit_bid(request, listing_id):
         bid = Bid(listing=listing, user=user, amount=bid_amount)
         bid.save()
         # And redirect to the listing page with the updated highest bid
-        return redirect(reverse('listing', args=(listing.id, )))
+        return redirect(reverse('listing', args=(listing.id,)))
     
     # If GET request, redirect to index
     return redirect(reverse('index'))

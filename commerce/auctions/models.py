@@ -17,6 +17,13 @@ class Listing(models.Model):
     category = models.ForeignKey('Category', on_delete=models.CASCADE, blank=True, null=True, related_name="category_listings")
     img_url = models.URLField(blank=True)
 
+    # Using choices for our status codes (since this list will be static), from https://docs.djangoproject.com/en/4.0/topics/db/models/
+    STATUS_CHOICES = (
+        ('Closed', 'Closed'),
+        ('Active', 'Active')
+    )
+    status = models.CharField(max_length=64, choices=STATUS_CHOICES, default='Active')
+
     def __str__(self):
         return self.title
 

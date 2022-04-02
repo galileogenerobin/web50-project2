@@ -7,7 +7,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class ListingAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "description", "starting_bid", "user", "category")
+    list_display = ("id", "title", "description", "starting_bid", "user", "category", "status")
 
 
 class BidAdmin(admin.ModelAdmin):
