@@ -8,9 +8,34 @@
 <div>
     <ul>
         <h5>{{ listing.title }}</h5>
+        <!-- If there is an img url provided -->
+        {% if listing.img_url %}
+        <img class="listing-image" src="{{ listing.img_url }}">
+        {% endif %}
         <li><strong>Price: $ {{ listing.starting_bid }}</strong></li>
         <li>Category: {{ listing.category}}</li>
         <li>Posted by: {{ listing.user }}</li>
+        <li>{{ listing.description }}</li>
     </ul>
+    Highest bid: 
+    <!-- Check if there are existing bids -->
+    {% if highest_bid is None %}
+    There are no existing bids
+    {% else %}
+    {{ highest_bid.amount }} by {{ highest_bid.user }}
+    {% endif %}
+
+    <!-- If logged in, can bid -->
+    {% if user.is_authenticated %}
+    <form action="{% url 'submit_bid' listing.id %}" method="post">
+        {% csrf_token %}
+        <input type="number" min="0" name="bid_amount" value="{{ current_bid }}">
+        <button type="submit">Place Bid</button>
+    </form>
+        <!-- In case of failed bid -->
+        {% if failed_bid %}
+        Sorry, your bid must be higher than the current highest bid, or the starting price (if no existing bids).
+        {% endif %}
+    {% endif %}
 </div>
 {% endblock %}

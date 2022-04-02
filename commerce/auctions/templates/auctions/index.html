@@ -12,6 +12,10 @@
         <div>
             <ul>
                 <h5>{{ listing.title }}</h5>
+                <!-- If an img url was provided -->
+                {% if listing.img_url %}
+                <img class="index-listing-image" src="{{ listing.img_url }}">
+                {% endif %}
                 <li><strong>Price: $ {{ listing.starting_bid }}</strong></li>
                 <li>{{ listing.description }}</li>
                 <li>Category: {{ listing.category}}</li>
