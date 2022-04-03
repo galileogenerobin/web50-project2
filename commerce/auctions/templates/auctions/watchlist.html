@@ -4,5 +4,31 @@
 
 {% block body %}
 <h2>Watchlist</h2>
-TODO: Placeholder for user watchlist
+
+<!-- Present all listings in the user's watchlist -->
+{% for listing in watchlist %}
+<a href="{% url 'listing' listing.id %}">
+    <div>
+        <ul>
+            <h5>{{ listing.title }}</h5>
+            <!-- If an img url was provided -->
+            {% if listing.img_url %}
+            <img class="index-listing-image" src="{{ listing.img_url }}">
+            {% endif %}
+            <li><strong>Price: $ {{ listing.starting_bid }}</strong></li>
+            <li>{{ listing.description }}</li>
+            <li>Category: {{ listing.category}}</li>
+            <li>Posted by: {{ listing.user }}</li>
+        </ul>
+        <!-- Form to remove the item from watchlist -->
+        <form action="{% url 'remove_from_watchlist' listing.id %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="request_source" value="watchlist">
+            <button type="submit">Remove from watchlist</button>
+        </form>
+    </div>
+</a>
+{% empty %}
+No items in watchlist
+{% endfor %}
 {% endblock %}

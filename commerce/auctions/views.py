@@ -78,9 +78,15 @@ def listing(request, listing_id):
         # Get the highest bid for the given listing, by first querying for all bids (.bids.all()), then ordering by amount and getting the first value
         highest_bid = listing.bids.all().order_by('-amount').first()
     
+    in_watchlist = False
+    # Check if listing is in users' watchlist
+    if listing in request.user.watchlist.all():
+        in_watchlist = True
+
     return render(request, 'auctions/listing.html', {
         'listing': listing,
         'highest_bid': highest_bid,
+        'in_watchlist': in_watchlist,
     })
 
 
@@ -140,7 +146,12 @@ def create_listing(request):
 # Check watch list
 @login_required(login_url="login")
 def watchlist(request):
-    return render(request, 'auctions/watchlist.html')
+    # Since we know the user is logged in for this view, we can just get the user's current watchlist
+    watchlist = request.user.watchlist.all()
+
+    return render(request, 'auctions/watchlist.html', {
+        'watchlist': watchlist
+    })
 
 
 # Submit a bid
@@ -151,8 +162,6 @@ def submit_bid(request, listing_id):
         bid_amount = int(request.POST['bid_amount'])
         # Get the listing from the database using the listing_id submitted in the form
         listing = Listing.objects.get(id=listing_id)
-        # Get the current user (i.e. the user that submitted the bid)
-        user = request.user
         
         # Check existing bids for the listing
         bids = listing.bids.all()
@@ -169,11 +178,48 @@ def submit_bid(request, listing_id):
                 'current_bid': bid_amount
             })
 
-        # After validating the bid amount above, we can create a new bid
-        bid = Bid(listing=listing, user=user, amount=bid_amount)
+        # After validating the bid amount above, we can create a new bid and tag it to the current user who submitted the request
+        bid = Bid(listing=listing, user=request.user, amount=bid_amount)
         bid.save()
         # And redirect to the listing page with the updated highest bid
         return redirect(reverse('listing', args=(listing.id,)))
     
+    # If GET request, redirect to index
+    return redirect(reverse('index'))
+
+
+# Add a listing to the watchlist
+@login_required(login_url="login")
+def add_to_watchlist(request, listing_id):
+    # We will only process POST requests
+    if request.method == 'POST':
+        # Get the Listing object
+        listing = Listing.objects.get(id=listing_id)
+        # If valid listing, add the listing to the user's watchlist and return to the listing page
+        if listing:
+            request.user.watchlist.add(listing)
+            return redirect(reverse('listing', args=(listing.id,)))
+        # Otherwise, don't process the request and redirect to index (which will happen via our last line below)
+
+    # If GET request, redirect to index
+    return redirect(reverse('index'))
+
+
+# Remove a listing from the watchlist
+@login_required(login_url='login')
+def remove_from_watchlist(request, listing_id):
+    # We will only process POST requests for
+    if request.method == 'POST':
+        # Get the Listing object
+        listing = Listing.objects.get(id=listing_id)
+        # If valid listing, remove from the user's watchlist
+        if listing:
+            # If the listing is not already in the user's watchlist, this won't do anything
+            request.user.watchlist.remove(listing)
+            # Redirect to the listing page or the watchlist page, depending on where the request was made
+            if request.POST['request_source'] == 'watchlist':
+                return redirect(reverse('watchlist'))
+            return redirect(reverse('listing', args=(listing.id,)))
+
     # If GET request, redirect to index
     return redirect(reverse('index'))

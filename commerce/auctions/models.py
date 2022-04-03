@@ -24,6 +24,9 @@ class Listing(models.Model):
     )
     status = models.CharField(max_length=64, choices=STATUS_CHOICES, default='Active')
 
+    # Creating a Many to Many Field with Users to create our Watchlist
+    watching = models.ManyToManyField(User, blank=True, related_name='watchlist')
+
     def __str__(self):
         return self.title
 
