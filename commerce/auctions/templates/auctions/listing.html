@@ -13,9 +13,13 @@
         <img class="listing-image" src="{{ listing.img_url }}">
         {% endif %}
         <li><strong>Price: $ {{ listing.starting_bid }}</strong></li>
-        <li>Category: {{ listing.category}}</li>
-        <li>Posted by: {{ listing.user }}</li>
         <li>{{ listing.description }}</li>
+        <li>Listed by: {{ listing.user }}</li>
+        {% if listing.category %}
+        <li>Category: {{ listing.category}}</li>
+        {% else %}
+        <li>Category: No category listed.</li>
+        {% endif %}
     </ul>
     Highest bid: 
     <!-- Check if there are existing bids -->
@@ -29,12 +33,20 @@
     {% if user.is_authenticated %}
         <form action="{% url 'submit_bid' listing.id %}" method="post">
             {% csrf_token %}
-            <input type="number" min="0" name="bid_amount" value="{{ current_bid }}">
+            <input type="number" min="0" name="bid_amount" placeholder="Enter bid amount" value="{{ current_bid }}">
             <button type="submit">Place Bid</button>
         </form>
         <!-- In case of failed bid -->
         {% if failed_bid %}
         Sorry, your bid must be higher than the current highest bid, or the starting price (if no existing bids).
+        {% endif %}
+
+        <!-- If user's own listing, user can close the listing -->
+        {% if listing.user == user %}
+            <form action="{% url 'close_listing' listing.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Close Listing</button><span>Note: This will close the listing and award to the winning bidder</span>
+            </form>
         {% endif %}
 
         <!-- Also, if logged in, can add to or remove from watchlist -->
@@ -51,5 +63,25 @@
             </form>
         {% endif %}
     {% endif %}
+</div>
+
+<h4>Comments</h4>
+<div>
+    <form action="{% url 'add_comment' listing.id %}" method="post">
+        {% csrf_token %}
+        <textarea name="comment_content" cols="100" rows="2" placeholder="Enter comment"></textarea>
+        <button type="submit">Add Comment</button>
+    </form>
+</div>
+<div>
+    <ul>
+        {% for comment in comments %}
+        <li>
+            <em>[{{ comment.created }}] </em><strong>{{ comment.user }}:</strong> {{ comment.content }}
+        </li>
+        {% empty %}
+        No comments on this listing.
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}

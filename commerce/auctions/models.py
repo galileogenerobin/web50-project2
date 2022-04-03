@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from datetime import datetime
 
 
 class User(AbstractUser):
@@ -16,6 +17,11 @@ class Listing(models.Model):
     # Optional Category and image URL fields
     category = models.ForeignKey('Category', on_delete=models.CASCADE, blank=True, null=True, related_name="category_listings")
     img_url = models.URLField(blank=True)
+
+    # Creating a timestamp field for when the listing was created; we will make this field read-only in our admin page (see admin.py)
+    created = models.DateTimeField(auto_now_add=True)
+    # Timestamp for any updates
+    last_updated = models.DateTimeField(auto_now=True)
 
     # Using choices for our status codes (since this list will be static), from https://docs.djangoproject.com/en/4.0/topics/db/models/
     STATUS_CHOICES = (
@@ -36,6 +42,8 @@ class Bid(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="bids")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_bids")
     amount = models.PositiveIntegerField()
+    # Adding a timestamp for when the Bid was placed
+    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return '{} bid for {} - amount: {}'.format(self.user, self.listing, self.amount)
@@ -46,6 +54,8 @@ class Comment(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listing_comments")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_comments")
     content = models.CharField(max_length=5000)
+    # Adding a timestamp for when the Comment was created
+    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return 'Comment {} by {} on {}'.format(self.id, self.user, self.listing)

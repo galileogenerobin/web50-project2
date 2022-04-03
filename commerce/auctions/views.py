@@ -83,10 +83,14 @@ def listing(request, listing_id):
     if listing in request.user.watchlist.all():
         in_watchlist = True
 
+    # Get the listing comments
+    comments = listing.listing_comments.all()
+
     return render(request, 'auctions/listing.html', {
         'listing': listing,
         'highest_bid': highest_bid,
         'in_watchlist': in_watchlist,
+        'comments': comments,
     })
 
 
@@ -208,7 +212,7 @@ def add_to_watchlist(request, listing_id):
 # Remove a listing from the watchlist
 @login_required(login_url='login')
 def remove_from_watchlist(request, listing_id):
-    # We will only process POST requests for
+    # We will only process POST requests
     if request.method == 'POST':
         # Get the Listing object
         listing = Listing.objects.get(id=listing_id)
@@ -222,4 +226,25 @@ def remove_from_watchlist(request, listing_id):
             return redirect(reverse('listing', args=(listing.id,)))
 
     # If GET request, redirect to index
+    return redirect(reverse('index'))
+
+
+# Add a comment
+@login_required(login_url='login')
+def add_comment(request, listing_id):
+    # We will only process POST requests
+    if request.method == 'POST':
+        listing = Listing.objects.get(id=listing_id)
+        comment_content = request.POST['comment_content']
+
+        # If listing exists (since this requires login, we know that the user exits, so we only check for the listing)
+        if listing:
+            # Create a new Comment object
+            comment = Comment(listing=listing, user=request.user, content=comment_content)
+            comment.save()
+            # Post the comment to the listing
+            listing.listing_comments.add(comment)
+            return redirect(reverse('listing', args=(listing.id,)))
+
+    # If GET request
     return redirect(reverse('index'))

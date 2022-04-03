@@ -7,15 +7,18 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class ListingAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "description", "starting_bid", "user", "category", "status")
+    list_display = ("id", "title", "description", "starting_bid", "user", "category", "status", "created", "last_updated")
+    readonly_fields = ("created", "last_updated")
 
 
 class BidAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "listing", "amount")
+    list_display = ("id", "user", "listing", "amount", "created")
+    readonly_fields = ("created",)
 
 
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "content")
+    list_display = ("id", "user", "content", "created")
+    readonly_fields = ("created",)
 
 
 class CategoryAdmin(admin.ModelAdmin):
