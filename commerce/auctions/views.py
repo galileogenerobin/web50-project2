@@ -10,10 +10,10 @@ from .forms import ListingForm
 
 
 def index(request):
-    listings = Listing.objects.all()
+    active_listings = Listing.objects.all().filter(status='Active')
 
     return render(request, "auctions/index.html", {
-        "listings": listings
+        "listings": active_listings
     })
 
 
@@ -103,9 +103,11 @@ def categories(request):
 
 def category_listings(request, category_id):
     category = Category.objects.get(id=category_id)
+    active_listings = category.category_listings.filter(status='Active')
+
     # We will reuse the same template for Active Listings, but here we will specify the category
     return render(request, 'auctions/index.html', {
-        'listings': category.category_listings.all(),
+        'listings': active_listings,
         'category': category.name
     })
 
@@ -145,6 +147,22 @@ def create_listing(request):
     return render(request, 'auctions/create_listing.html', {
         'form': form
     })
+
+
+# Close listing
+@login_required(login_url='login')
+def close_listing(request, listing_id):
+    if request.method == 'POST':
+        # Get the listing instance
+        listing = Listing.objects.get(id=listing_id)
+        # Get the winning bidder
+        winning_bidder = listing.bids.order_by('-amount').first().user
+        listing.winning_bidder = winning_bidder
+        listing.status = 'Closed'
+        listing.save()
+        return redirect(reverse('listing', args=(listing.id,)))
+
+    return redirect(reverse('index'))
 
 
 # Check watch list

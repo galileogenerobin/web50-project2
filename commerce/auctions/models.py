@@ -33,6 +33,9 @@ class Listing(models.Model):
     # Creating a Many to Many Field with Users to create our Watchlist
     watching = models.ManyToManyField(User, blank=True, related_name='watchlist')
 
+    # Adding a field for the winning bidder
+    winning_bidder = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
     def __str__(self):
         return self.title
 

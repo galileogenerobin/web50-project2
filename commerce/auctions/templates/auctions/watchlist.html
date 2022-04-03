@@ -20,15 +20,25 @@
             <li>Category: {{ listing.category}}</li>
             <li>Posted by: {{ listing.user }}</li>
         </ul>
-        <!-- Form to remove the item from watchlist -->
-        <form action="{% url 'remove_from_watchlist' listing.id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="request_source" value="watchlist">
-            <button type="submit">Remove from watchlist</button>
-        </form>
+        
+        <!-- If listing is closed -->
+        {% if listing.status == 'Closed' %}
+            This listing is closed.
+            {% if listing.winning_bidder == user %}
+            Congratulations! You won the bid for this listing!
+            {% endif %}
+        {% endif %}
     </div>
 </a>
+
+<!-- Form to remove the item from watchlist -->
+<form action="{% url 'remove_from_watchlist' listing.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="request_source" value="watchlist">
+    <button type="submit">Remove from watchlist</button>
+</form>
+
 {% empty %}
-No items in watchlist
+    No items in watchlist
 {% endfor %}
 {% endblock %}
