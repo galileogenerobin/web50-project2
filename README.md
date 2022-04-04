@@ -1,6 +1,8 @@
 # web50-project2
 ## CS50 Web - Project 2 - Commerce
 
+Demo of completed project here: TO BE UPDATED
+
 ## Specifications:
 
 Specifications found here: https://cs50.harvard.edu/web/2020/projects/2/commerce/

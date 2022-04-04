@@ -99,7 +99,7 @@
                 {% endif %}
 
             {% else %}
-                <div class="bids-container">
+                <div class="mb-2 text-center">
                     <em>You must be logged in to submit a bid.</em>
                     <a href="{% url 'login' %}">Log in</a>
                 </div>
@@ -154,7 +154,7 @@
                         <div>{{ comment.content }}</div>
                     </div>
                 {% empty %}
-                    No comments on this listing.
+                    <div class="text-center">No comments on this listing.</div>
                 {% endfor %}
             </div>
         </div>
