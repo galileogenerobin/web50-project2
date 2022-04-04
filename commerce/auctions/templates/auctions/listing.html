@@ -4,105 +4,160 @@
 {% block title %}{{ listing.title }}{% endblock %}
 
 {% block body %}
-    <h2>Listing</h2>
-    <div>
-        <ul>
-            <h5>{{ listing.title }}</h5>
-            
-            <!-- If there is an img url provided -->
-            {% if listing.img_url %}
-                <img class="listing-image" src="{{ listing.img_url }}">
-            {% endif %}
-            
-            <li><strong>Price: $ {{ listing.starting_bid }}</strong></li>
-            <li>{{ listing.description }}</li>
-            <li>Listed by: {{ listing.user }}</li>
-            
-            {% if listing.category %}
-                <li>Category: {{ listing.category}}</li>
-            {% else %}
-                <li>Category: No category listed.</li>
-            {% endif %}
-
-        </ul>
-
-        <!-- If listing is active, we can show the current highest bid -->
-        {% if listing.status == "Active" %}
-            Highest bid: 
-            <!-- Check if there are existing bids -->
-            {% if highest_bid is None %}
-                There are no existing bids.
-            {% else %}
-                $ {{ highest_bid.amount }} by {{ highest_bid.user }}
-            {% endif %}
-        {% endif %}
-
-        <!-- If logged in -->
+<div class="listing-page">
+    <div class="listing-title-container">
+        <h2 class="text-center listing-title">{{ listing.title }}</h2>
+        
         {% if user.is_authenticated %}
-            <!-- If listing is active -->
-            {% if listing.status == "Active" %}
-                <!-- Users can bid -->
-                <form action="{% url 'submit_bid' listing.id %}" method="post">
-                    {% csrf_token %}
-                    <input type="number" min="0" name="bid_amount" placeholder="Enter bid amount" value="{{ current_bid }}">
-                    <button type="submit">Place Bid</button>
-                </form>
-                
-                <!-- In case of failed bid -->
-                {% if failed_bid %}
-                    Sorry, your bid must be higher than the current highest bid, or the starting price (if no existing bids).
-                {% endif %}
-
-                <!-- If user's own listing, user can close the listing -->
-                {% if listing.user == user %}
-                    <form action="{% url 'close_listing' listing.id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit">Close Listing</button><span>Note: This will close the listing and award to the winning bidder</span>
-                    </form>
-                {% endif %}
-
-                <!-- Also, if logged in, can add to or remove from watchlist -->
+            <div class="watchlist-button">
+            <!-- If logged in, user can add to or remove from watchlist -->
                 {% if not in_watchlist %}
                     <form action="{% url 'add_to_watchlist' listing.id %}" method="post">
                         {% csrf_token %}
-                        <button type="submit">Add to Watchlist</button>
+                        <button class="btn btn-outline-primary btn-sm" type="submit">Add to Watchlist</button>
                     </form>
                 {% else %}
                     <form action="{% url 'remove_from_watchlist' listing.id %}" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="request_source" value="listing">
-                        <button type="submit">Remove from Watchlist</button>
+                        <button class="btn btn-outline-secondary btn-sm" type="submit">Remove from Watchlist</button>
                     </form>
                 {% endif %}
-
-                <h4>Comments</h4>
-                <div>
-                    <form action="{% url 'add_comment' listing.id %}" method="post">
-                        {% csrf_token %}
-                        <textarea name="comment_content" cols="100" rows="2" placeholder="Enter comment"></textarea>
-                        <button type="submit">Add Comment</button>
-                    </form>
-                </div>
-                <div>
-                    <ul>
-                        {% for comment in comments %}
-                        <li>
-                            <em>[{{ comment.created }}] </em><strong>{{ comment.user }}:</strong> {{ comment.content }}
-                        </li>
-                        {% empty %}
-                            No comments on this listing.
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% else %}
-                <!-- Bidding is closed -->
-                Bidding is closed.
-                <!-- If user is the winning bidder -->
-                {% if highest_bid.user == user %}
-                    Congratulations! You won the bid for this listing.
-                {% endif %}
-            {% endif %}
-
+            </div>
         {% endif %}
     </div>
+
+    <div class="listing-content">
+        <!-- If there is an img url provided -->
+        <div class="listing-image-container">
+        {% if listing.img_url %}
+            <img class="listing-image" src="{{ listing.img_url }}">
+        {% else %}
+            <div class="text-center">No Image Available</div>
+        {% endif %}
+        </div>
+        
+        <div class="listing-details">
+            <div class="listing-price">Price: $ {{ listing.starting_bid }}</div>
+            <div class="listing-description">{{ listing.description }}</div>
+            <div class="listing-meta">
+                <div>Listed by: <em>{{ listing.user }}</em></div>
+                
+                <div>
+                    {% if listing.category %}
+                        Category: <a href="{% url 'category_listings' listing.category.id %}">{{ listing.category }}</a>
+                    {% else %}
+                        Category: No category listed.
+                    {% endif %}
+                </div>
+            </div>
+        
+        <hr>
+        <h3 class="text-center mt-3">Bids</h3>
+            <!-- If listing is active, we can show the current highest bid -->
+            {% if listing.status == "Active" %}
+            <div class="highest-bid">
+                Current highest bid: 
+                <!-- Check if there are existing bids -->
+                {% if highest_bid is None %}
+                    There are no existing bids.
+                {% else %}
+                    <strong>$ {{ highest_bid.amount }}</strong> by <em>{{ highest_bid.user }}</em>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- If listing is active -->
+        {% if listing.status == "Active" %}
+            <!-- If logged in on active listing, can submit bids, add to watchlist, and/or close listing -->
+            {% if user.is_authenticated %}
+                <!-- Users can bid -->
+                <form action="{% url 'submit_bid' listing.id %}" method="post">
+                    <div class="bids-container">
+                        {% csrf_token %}
+                        <input class="form-control input-bid" type="number" required min="0" name="bid_amount" placeholder="Enter bid amount" value="{{ current_bid }}">
+                        <button class="btn btn-primary submit-bid" type="submit">Place Bid</button>
+                    </div>
+                    <!-- In case of failed bid -->
+                    <div class="bids-error">
+                        {% if failed_bid %}
+                            Sorry, your bid must be higher than the current highest bid, or the starting price (if no existing bids).
+                        {% endif %}
+                    </div>
+                </form>
+
+                <!-- If user's own listing, user can close the listing -->
+                {% if listing.user == user %}
+                <form action="{% url 'close_listing' listing.id %}" method="post">
+                    <div class="close-listing-container">
+                        {% csrf_token %}
+                        <button class="btn btn-secondary btn-sm close-listing" type="submit">Close Listing</button>
+                        <div><em>This will close the bid and award the listing to the winning bidder.</em></div>
+                    </div>
+                </form>
+                {% endif %}
+
+            {% else %}
+                <div class="bids-container">
+                    <em>You must be logged in to submit a bid.</em>
+                    <a href="{% url 'login' %}">Log in</a>
+                </div>
+            {% endif %}
+
+        {% else %}
+                
+        <!-- Bidding is closed -->
+        <div class="text-center">
+            <em>Bidding is closed.</em>
+            <br>
+            <!-- If user is the winning bidder -->
+            {% if highest_bid.user == user %}
+                <strong>Congratulations! You won the bid for this listing.</strong>
+            {% endif %}
+        </div>
+
+        {% endif %}
+
+        <hr class="listing-break">
+        <div class="comments-container">
+            <h3 class="text-center mb-2">Comments</h3>
+            {% if user.is_authenticated and listing.status == 'Active' %}
+            <!-- User must be logged in to add comments -->
+                <form action="{% url 'add_comment' listing.id %}" method="post">
+                    <div>
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <label for="comment" class="form-label">Comment</label>
+                            <div class="add-comment">
+                                <textarea class="form-control comment-content" name="comment_content" id="comment" rows="1" placeholder="Enter comment"></textarea>
+                                <button class="btn btn-primary add-comment-btn" type="submit">Add Comment</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            {% elif listing.status == 'Active' %}
+                <div class="mb-2 text-center">
+                    <em>You must be logged in to add comments.</em>
+                    <a href="{% url 'login' %}">Log in</a>
+                </div>
+            {% else %}
+            <!-- Listing is no longer active -->
+                <div class="mb-2 text-center">
+                    <em>This listing is closed. You may no longer add comments.</em>
+                </div>
+            {% endif %}
+            <div>
+                {% for comment in comments %}
+                    <div class="mb-2">
+                        <strong>{{ comment.user }}</strong>, <em>{{ comment.created }}</em>
+                        <div>{{ comment.content }}</div>
+                    </div>
+                {% empty %}
+                    No comments on this listing.
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -3,40 +3,53 @@
 {% block title %}Watchlist{% endblock %}
 
 {% block body %}
-<h2>Watchlist</h2>
+<h2 class="text-center">Watchlist</h2>
 
 <!-- Present all listings in the user's watchlist -->
 {% for listing in watchlist %}
-<a href="{% url 'listing' listing.id %}">
-    <div>
-        <ul>
-            <h5>{{ listing.title }}</h5>
-            <!-- If an img url was provided -->
-            {% if listing.img_url %}
-            <img class="index-listing-image" src="{{ listing.img_url }}">
-            {% endif %}
-            <li><strong>Price: $ {{ listing.starting_bid }}</strong></li>
-            <li>{{ listing.description }}</li>
-            <li>Category: {{ listing.category}}</li>
-            <li>Posted by: {{ listing.user }}</li>
-        </ul>
-        
-        <!-- If listing is closed -->
-        {% if listing.status == 'Closed' %}
-            This listing is closed.
-            {% if listing.winning_bidder == user %}
-            Congratulations! You won the bid for this listing!
-            {% endif %}
-        {% endif %}
+    <div class="listing-container mb-1">
+        <a class="listing-link" href="{% url 'listing' listing.id %}">
+            <div class="index-listing-image-container">
+                <!-- If an img url was provided -->
+                {% if listing.img_url %}
+                <img class="index-listing-image" src="{{ listing.img_url }}">
+                {% endif %}
+            </div>
+            <div class="index-listing-description">
+                <h4>{{ listing.title }}</h4>
+                <div class="mt-3"><strong>Price: $ {{ listing.starting_bid }}</strong></div>
+                <div>{{ listing.description }}</div>
+                <div class="mt-3">
+                    {% if listing.category %}
+                        Category: {{ listing.category }}
+                    {% else %}
+                        Category: No category listed.
+                    {% endif %}
+                </div>
+                <div>Posted by: <em>{{ listing.user }}</em></div>
+                    
+                <!-- If listing is closed -->
+                {% if listing.status == 'Closed' %}
+                    <div class="mt-3">
+                        <em>This listing is closed.</em>
+                        <br>
+                        {% if listing.winning_bidder == user %}
+                            <strong>Congratulations! You won the bid for this listing!</strong>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </a>
     </div>
-</a>
-
-<!-- Form to remove the item from watchlist -->
-<form action="{% url 'remove_from_watchlist' listing.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="request_source" value="watchlist">
-    <button type="submit">Remove from watchlist</button>
-</form>
+    
+    <!-- Form to remove the item from watchlist -->
+    <form action="{% url 'remove_from_watchlist' listing.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="request_source" value="watchlist">
+        <div class="watchlist-remove">
+            <button class="btn btn-outline-secondary btn-sm watchlist-remove-button" type="submit">Remove from watchlist</button>
+        </div>
+    </form>
 
 {% empty %}
     No items in watchlist

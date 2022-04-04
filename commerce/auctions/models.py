@@ -10,7 +10,7 @@ class User(AbstractUser):
 # Creating a Model for an auction listing, inhereting from models.Model
 class Listing(models.Model):
     title = models.CharField(max_length=64)
-    description = models.CharField(max_length=1000)
+    description = models.CharField(max_length=256)
     starting_bid = models.PositiveIntegerField()
     # Recall that related_name allows us to do a reverse search, i.e. for a given User, User.listings.all() gives us all related Listings for that User
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listings")
@@ -34,7 +34,7 @@ class Listing(models.Model):
     watching = models.ManyToManyField(User, blank=True, related_name='watchlist')
 
     # Adding a field for the winning bidder
-    winning_bidder = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    winning_bidder = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -67,6 +67,7 @@ class Comment(models.Model):
 # Creating a Model for listing categories
 class Category(models.Model):
     name = models.CharField(max_length=64)
+    img_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.name

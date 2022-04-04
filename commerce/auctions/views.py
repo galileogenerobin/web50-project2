@@ -79,9 +79,11 @@ def listing(request, listing_id):
         highest_bid = listing.bids.all().order_by('-amount').first()
     
     in_watchlist = False
-    # Check if listing is in users' watchlist
-    if listing in request.user.watchlist.all():
-        in_watchlist = True
+
+    if request.user.is_authenticated:
+        # Check if listing is in users' watchlist
+        if listing in request.user.watchlist.all():
+            in_watchlist = True
 
     # Get the listing comments
     comments = listing.listing_comments.all()
@@ -141,11 +143,12 @@ def create_listing(request):
         #     # img_url = form.cleaned_data['img_url']
             
     else:
-        # If GET request, we create a blank form
-        form = ListingForm()
+        # If GET request, we create a blank form in our HTML
+        # We need to get the list of categories
+        categories = Category.objects.all()
 
     return render(request, 'auctions/create_listing.html', {
-        'form': form
+        'categories': categories
     })
 
 
@@ -155,8 +158,13 @@ def close_listing(request, listing_id):
     if request.method == 'POST':
         # Get the listing instance
         listing = Listing.objects.get(id=listing_id)
-        # Get the winning bidder
-        winning_bidder = listing.bids.order_by('-amount').first().user
+        
+        # Check if there are bids available
+        bids = listing.bids.all()
+        winning_bidder = None
+        if bids:
+            # Get the winning bidder
+            winning_bidder = bids.order_by('-amount').first().user
         listing.winning_bidder = winning_bidder
         listing.status = 'Closed'
         listing.save()
@@ -181,7 +189,12 @@ def watchlist(request):
 def submit_bid(request, listing_id):
     # We only process POST requests
     if request.method == "POST":
-        bid_amount = int(request.POST['bid_amount'])
+        # If user submitted an invalid bid amount
+        try:
+            bid_amount = int(request.POST['bid_amount'])
+        except ValueError:
+            return redirect(reverse('listing', args=(listing_id,)))
+
         # Get the listing from the database using the listing_id submitted in the form
         listing = Listing.objects.get(id=listing_id)
         
@@ -192,10 +205,21 @@ def submit_bid(request, listing_id):
         highest_bid = None if not bids else bids.order_by('-amount').first()
         # If there are no existing bids and the bid amount is less than the starting bid, OR the bid amount is less than the highest bid
         if (not bids and bid_amount <= listing.starting_bid) or (bids and bid_amount <= highest_bid.amount):
+            in_watchlist = False
+            if request.user.is_authenticated:
+                # Check if listing is in users' watchlist
+                if listing in request.user.watchlist.all():
+                    in_watchlist = True
+
+            # Get the listing comments
+            comments = listing.listing_comments.all()
+            
             # Show an error on the listing page
             return render(request, 'auctions/listing.html', {
                 'listing': listing,
                 'highest_bid': highest_bid,
+                'in_watchlist': in_watchlist,
+                'comments': comments,
                 'failed_bid': True,
                 'current_bid': bid_amount
             })
@@ -220,7 +244,7 @@ def add_to_watchlist(request, listing_id):
         # If valid listing, add the listing to the user's watchlist and return to the listing page
         if listing:
             request.user.watchlist.add(listing)
-            return redirect(reverse('listing', args=(listing.id,)))
+            return redirect(reverse('listing', args=(listing_id,)))
         # Otherwise, don't process the request and redirect to index (which will happen via our last line below)
 
     # If GET request, redirect to index
@@ -241,7 +265,7 @@ def remove_from_watchlist(request, listing_id):
             # Redirect to the listing page or the watchlist page, depending on where the request was made
             if request.POST['request_source'] == 'watchlist':
                 return redirect(reverse('watchlist'))
-            return redirect(reverse('listing', args=(listing.id,)))
+            return redirect(reverse('listing', args=(listing_id,)))
 
     # If GET request, redirect to index
     return redirect(reverse('index'))
@@ -262,7 +286,7 @@ def add_comment(request, listing_id):
             comment.save()
             # Post the comment to the listing
             listing.listing_comments.add(comment)
-            return redirect(reverse('listing', args=(listing.id,)))
+            return redirect(reverse('listing', args=(listing_id,)))
 
     # If GET request
     return redirect(reverse('index'))
