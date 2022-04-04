@@ -1,7 +1,7 @@
 # web50-project2
 ## CS50 Web - Project 2 - Commerce
 
-Demo of completed project here: TO BE UPDATED
+Demo of completed project here: https://youtu.be/S0ImsmgtN9Y
 
 ## Specifications:
 
